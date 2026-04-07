@@ -88,11 +88,11 @@ TableFlow is optimized for rapid deployment using standard Java tools:
 
 I. Compilation Process
 Open a terminal in the root directory and execute:
-   javac -d out/production/ExamenPOO src/model_rezervari/*.java
+   javac -d out/production/tableflow src/model_rezervari/*.java
 
 II. System Launch
 Start the server and backend with:
-   java -cp out/production/ExamenPOO model_rezervari.Main
+   java -cp out/production/tableflow model_rezervari.Main
 
 The dashboard will be active at http://localhost:8080 and will attempt to open the default system browser automatically upon successful initialization.
 
