@@ -1,4 +1,6 @@
 TableFlow: Professional Digital Restaurant Management Architecture
+
+[**🚀 Live Demo on Vercel**](https://table-flow-git-main-dianaharconita-6247s-projects.vercel.app/)
  
 The TableFlow system represents a comprehensive architectural solution for modernizing restaurant floor operations. Built on a zero-dependency Java 8 foundation, this platform provides a high-performance, non-blocking environment for real-time guest management, table state synchronization, and long-term data persistence. By eliminating the need for external libraries and heavy frameworks, TableFlow ensures 100 percent portability and rapid execution across any environment with a bare Java Runtime Environment (JRE).
 
