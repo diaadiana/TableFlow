@@ -12,119 +12,119 @@ import java.util.stream.Collectors;
 
 public class Restaurant {
 
-    private List<AranjareMese> mese;
+    private List<Table> tables;
 
-    public Restaurant(List<AranjareMese> mese) {
-        this.mese = mese;
+    public Restaurant(List<Table> tables) {
+        this.tables = tables;
     }
 
-    public boolean faRezervare(String numeClient,
-                               int nrPersoane,
-                               LocalDateTime dataOra,
-                               Amplasare amplasare,
-                               SpecificulRezervarii specific,
-                               Integer masaIdCautata) {
+    public boolean makeReservation(String clientName,
+                                   int guestCount,
+                                   LocalDateTime dateTime,
+                                   Location location,
+                                   BookingType bookingType,
+                                   Integer requestedTableId) {
 
-        java.util.function.Predicate<AranjareMese> isOptimized = m -> {
-            int cap = m.getCapacitate();
-            if (nrPersoane == 1 && cap > 2) return false;
-            if (nrPersoane == 3 && cap > 4) return false;
+        java.util.function.Predicate<Table> isOptimized = t -> {
+            int cap = t.getCapacity();
+            if (guestCount == 1 && cap > 2) return false;
+            if (guestCount == 3 && cap > 4) return false;
             // Standard rule: don't leave more than 1 seat empty if possible
-            if (cap - nrPersoane > 1) return false;
+            if (cap - guestCount > 1) return false;
             return true;
         };
 
-        Optional<AranjareMese> targetMasa = Optional.empty();
+        Optional<Table> targetTable = Optional.empty();
 
         // 1. Try to find a PERFECTLY OPTIMIZED table in the requested location
         // Priority to the one clicked if it's optimized and available
-        if (masaIdCautata != null) {
-            targetMasa = mese.stream()
-                    .filter(m -> m.getId() == (int)masaIdCautata && m.getAmplasare() == amplasare &&
-                            isOptimized.test(m) && m.esteDisponibila(dataOra, nrPersoane, numeClient) &&
-                            m.getLocuriRamase(dataOra) >= nrPersoane)
+        if (requestedTableId != null) {
+            targetTable = tables.stream()
+                    .filter(t -> t.getId() == (int) requestedTableId && t.getLocation() == location &&
+                            isOptimized.test(t) && t.isAvailable(dateTime, guestCount, clientName) &&
+                            t.getRemainingSeats(dateTime) >= guestCount)
                     .findFirst();
         }
 
         // 2. If not found, look for ANY other optimized table in that location
-        if (!targetMasa.isPresent()) {
-            targetMasa = mese.stream()
-                    .filter(m -> m.getAmplasare() == amplasare &&
-                            isOptimized.test(m) && m.esteDisponibila(dataOra, nrPersoane, numeClient) &&
-                            m.getLocuriRamase(dataOra) >= nrPersoane)
+        if (!targetTable.isPresent()) {
+            targetTable = tables.stream()
+                    .filter(t -> t.getLocation() == location &&
+                            isOptimized.test(t) && t.isAvailable(dateTime, guestCount, clientName) &&
+                            t.getRemainingSeats(dateTime) >= guestCount)
                     .findFirst();
         }
 
-        // 3. Last Resort: If no *optimized* table found, take ANY available table that fits the guests 
+        // 3. Last Resort: If no *optimized* table found, take ANY available table that fits the guests
         // to avoid throwing an error to the user.
-        if (!targetMasa.isPresent()) {
+        if (!targetTable.isPresent()) {
             // Try clicked table first (if it fits capacity)
-            if (masaIdCautata != null) {
-                targetMasa = mese.stream()
-                    .filter(m -> m.getId() == (int)masaIdCautata && m.getAmplasare() == amplasare &&
-                            m.esteDisponibila(dataOra, nrPersoane, numeClient) &&
-                            m.getLocuriRamase(dataOra) >= nrPersoane)
-                    .findFirst();
+            if (requestedTableId != null) {
+                targetTable = tables.stream()
+                        .filter(t -> t.getId() == (int) requestedTableId && t.getLocation() == location &&
+                                t.isAvailable(dateTime, guestCount, clientName) &&
+                                t.getRemainingSeats(dateTime) >= guestCount)
+                        .findFirst();
             }
             // If still nothing, take literally any table that fits the guests
-            if (!targetMasa.isPresent()) {
-                targetMasa = mese.stream()
-                    .filter(m -> m.getAmplasare() == amplasare &&
-                            m.esteDisponibila(dataOra, nrPersoane, numeClient) &&
-                            m.getLocuriRamase(dataOra) >= nrPersoane)
-                    .findFirst();
+            if (!targetTable.isPresent()) {
+                targetTable = tables.stream()
+                        .filter(t -> t.getLocation() == location &&
+                                t.isAvailable(dateTime, guestCount, clientName) &&
+                                t.getRemainingSeats(dateTime) >= guestCount)
+                        .findFirst();
             }
         }
 
-        if (targetMasa.isPresent()) {
-            AranjareMese masa = targetMasa.get();
-            Rezervare rezervare = new Rezervare(numeClient, nrPersoane, dataOra, specific, masa);
-            masa.adaugaRezervare(rezervare);
-            Database.save(mese); // Save update
+        if (targetTable.isPresent()) {
+            Table table = targetTable.get();
+            Reservation reservation = new Reservation(clientName, guestCount, dateTime, bookingType, table);
+            table.addReservation(reservation);
+            Database.save(tables);
 
-            int ramaseDupa = masa.getLocuriRamase(dataOra);
-            if (ramaseDupa <= 2 && ramaseDupa > 0) {
-                System.out.println("[Info] Table " + masa.getId() + " partially filled. Remaining: " + ramaseDupa);
+            int remaining = table.getRemainingSeats(dateTime);
+            if (remaining <= 2 && remaining > 0) {
+                System.out.println("[Info] Table " + table.getId() + " partially filled. Remaining: " + remaining);
             }
             return true;
 
         } else {
-            throw new IllegalArgumentException("No tables available for " + nrPersoane + " guests in the " + amplasare + " zone.");
+            throw new IllegalArgumentException("No tables available for " + guestCount + " guests in the " + location + " zone.");
         }
     }
 
-    public boolean anuleazaRezervare(int masaId, LocalDateTime dataOra) {
-        Optional<AranjareMese> masaOpt = mese.stream().filter(m -> m.getId() == masaId).findFirst();
-        if (masaOpt.isPresent()) {
-            AranjareMese masa = masaOpt.get();
-            boolean removed = masa.rezervari.removeIf(r -> r.getDataOra().equals(dataOra));
+    public boolean cancelReservation(int tableId, LocalDateTime dateTime) {
+        Optional<Table> tableOpt = tables.stream().filter(t -> t.getId() == tableId).findFirst();
+        if (tableOpt.isPresent()) {
+            Table table = tableOpt.get();
+            boolean removed = table.reservations.removeIf(r -> r.getDateTime().equals(dateTime));
             if (removed) {
-                Database.save(mese);
+                Database.save(tables);
                 return true;
             }
         }
         return false;
     }
 
-    public List<String> afiseazaRezervari() {
-        List<String> lista = new ArrayList<>();
-        for (AranjareMese m : mese) {
-            lista.addAll(
-                    m.rezervari.stream()
-                            .map(Rezervare::toString)
+    public List<String> listReservations() {
+        List<String> list = new ArrayList<>();
+        for (Table t : tables) {
+            list.addAll(
+                    t.reservations.stream()
+                            .map(Reservation::toString)
                             .collect(Collectors.toList())
             );
         }
-        return lista;
+        return list;
     }
 
-    public List<Rezervare> cautaRezervariClient(String numeClient,
-                                                LocalDateTime deLa,
-                                                LocalDateTime panaLa) {
-        return mese.stream()
-                .flatMap(m -> m.rezervari.stream())
-                .filter(r -> r.getNumeClient().equalsIgnoreCase(numeClient))
-                .filter(r -> !r.getDataOra().isBefore(deLa) && !r.getDataOra().isAfter(panaLa))
+    public List<Reservation> findClientReservations(String clientName,
+                                                     LocalDateTime from,
+                                                     LocalDateTime to) {
+        return tables.stream()
+                .flatMap(t -> t.reservations.stream())
+                .filter(r -> r.getClientName().equalsIgnoreCase(clientName))
+                .filter(r -> !r.getDateTime().isBefore(from) && !r.getDateTime().isAfter(to))
                 .collect(Collectors.toList());
     }
 }

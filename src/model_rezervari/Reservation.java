@@ -2,34 +2,33 @@ package model_rezervari;
 
 import java.time.LocalDateTime;
 
-public class Rezervare {
+public class Reservation {
 
-    private String numeClient;
-    private int nrPersoane;
-    private LocalDateTime dataOra;
-    private SpecificulRezervarii specific;
-    private AranjareMese masa;
+    private String clientName;
+    private int guestCount;
+    private LocalDateTime dateTime;
+    private BookingType bookingType;
+    private Table table;
 
-    public Rezervare(String numeClient, int nrPersoane, LocalDateTime dataOra,
-                     SpecificulRezervarii specific, AranjareMese masa) {
-        this.numeClient = numeClient;
-        this.nrPersoane = nrPersoane;
-        this.dataOra    = dataOra;
-        this.specific   = specific;
-        this.masa       = masa;
+    public Reservation(String clientName, int guestCount, LocalDateTime dateTime,
+                       BookingType bookingType, Table table) {
+        this.clientName  = clientName;
+        this.guestCount  = guestCount;
+        this.dateTime    = dateTime;
+        this.bookingType = bookingType;
+        this.table       = table;
     }
 
-    public int getNrPersoane()          { return nrPersoane; }
-    public LocalDateTime getDataOra()   { return dataOra; }
-    public String getNumeClient()       { return numeClient; }
-    public AranjareMese getMasa()       { return masa; }
-    public SpecificulRezervarii getSpecific() { return specific; } // ← ADĂUGAT
+    public int getGuestCount()          { return guestCount; }
+    public LocalDateTime getDateTime()  { return dateTime; }
+    public String getClientName()       { return clientName; }
+    public Table getTable()             { return table; }
+    public BookingType getBookingType() { return bookingType; }
 
     @Override
     public String toString() {
-        return "Reservation for " + numeClient + " at table " + masa.getId() +
-                " (" + masa.getAmplasare() + ") for " + nrPersoane +
-                " guests, at " + dataOra + ", specific: " + specific;
+        return "Reservation for " + clientName + " at table " + table.getId() +
+                " (" + table.getLocation() + ") for " + guestCount +
+                " guests, at " + dateTime + ", type: " + bookingType;
     }
-
 }

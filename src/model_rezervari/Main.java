@@ -15,34 +15,34 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) throws Exception {
 
-        List<AranjareMese> mese = new ArrayList<>();
-        mese.add(new AranjareMese(1, 3, Amplasare.INDOOR));
-        mese.add(new AranjareMese(2, 2, Amplasare.INDOOR));
-        mese.add(new AranjareMese(3, 4, Amplasare.INDOOR));
-        mese.add(new AranjareMese(4, 4, Amplasare.INDOOR));
-        mese.add(new AranjareMese(5, 4, Amplasare.OUTDOOR));
-        mese.add(new AranjareMese(6, 5, Amplasare.OUTDOOR));
-        mese.add(new AranjareMese(7, 6, Amplasare.OUTDOOR));
+        List<Table> tables = new ArrayList<>();
+        tables.add(new Table(1, 3, Location.INDOOR));
+        tables.add(new Table(2, 2, Location.INDOOR));
+        tables.add(new Table(3, 4, Location.INDOOR));
+        tables.add(new Table(4, 4, Location.INDOOR));
+        tables.add(new Table(5, 4, Location.OUTDOOR));
+        tables.add(new Table(6, 5, Location.OUTDOOR));
+        tables.add(new Table(7, 6, Location.OUTDOOR));
 
-        Restaurant restaurant = new Restaurant(new ArrayList<>(mese));
+        Restaurant restaurant = new Restaurant(new ArrayList<>(tables));
 
         // ── Attempt to load saved reservations ──────────────
-        Database.load(mese);
+        Database.load(tables);
 
-        boolean hasData = mese.stream().anyMatch(m -> !m.rezervari.isEmpty());
+        boolean hasData = tables.stream().anyMatch(t -> !t.reservations.isEmpty());
         if (!hasData) {
             System.out.println("[Database] No existing data found. Seeding defaults...");
             LocalDateTime now = LocalDateTime.now();
             LocalDateTime slot = now.withMinute(0).withSecond(0).withNano(0);
-            
-            restaurant.faRezervare("Alexandru Popescu", 4, slot, Amplasare.OUTDOOR, SpecificulRezervarii.BIRTHDAY, null);
-            restaurant.faRezervare("Maria Ionescu", 2, slot, Amplasare.INDOOR, SpecificulRezervarii.FAMILY, null);
-            restaurant.faRezervare("Andrei Dumitrescu", 3, slot, Amplasare.INDOOR, SpecificulRezervarii.FRIENDS, null);
-            restaurant.faRezervare("Elena Gheorghe", 1, slot, Amplasare.OUTDOOR, SpecificulRezervarii.MEETING, null);
+
+            restaurant.makeReservation("Alexandru Popescu", 4, slot, Location.OUTDOOR, BookingType.BIRTHDAY, null);
+            restaurant.makeReservation("Maria Ionescu", 2, slot, Location.INDOOR, BookingType.FAMILY, null);
+            restaurant.makeReservation("Andrei Dumitrescu", 3, slot, Location.INDOOR, BookingType.FRIENDS, null);
+            restaurant.makeReservation("Elena Gheorghe", 1, slot, Location.OUTDOOR, BookingType.MEETING, null);
         }
 
         // ── Start server ────────────────────────────────────
-        ApiServer server = new ApiServer(restaurant, mese, 8080);
+        ApiServer server = new ApiServer(restaurant, tables, 8080);
         server.start();
 
         System.out.println("TableFlow — http://localhost:8080");

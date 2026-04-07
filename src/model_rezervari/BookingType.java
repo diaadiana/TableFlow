@@ -1,8 +1,8 @@
 package model_rezervari;
 
-//Enum care definește tipul de eveniment pentru o rezervare:
-// zi de naștere, ieșire cu prieteni, întâlnire de familie sau întâlnire generală.
+// Enum that defines the event type for a reservation:
+// birthday, friends outing, family gathering or general meeting.
 
-public enum SpecificulRezervarii {
+public enum BookingType {
     BIRTHDAY, FRIENDS, FAMILY, MEETING
 }

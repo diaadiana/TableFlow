@@ -26,13 +26,13 @@ public class ApiServer {
     private static final DateTimeFormatter FMT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     private final Restaurant restaurant;
-    private final List<AranjareMese> mese;
+    private final List<Table> tables;
     private final int port;
     private HttpServer server;
 
-    public ApiServer(Restaurant restaurant, List<AranjareMese> mese, int port) {
+    public ApiServer(Restaurant restaurant, List<Table> tables, int port) {
         this.restaurant = restaurant;
-        this.mese       = mese;
+        this.tables     = tables;
         this.port       = port;
     }
 
@@ -105,21 +105,21 @@ public class ApiServer {
         if (dt == null) dt = LocalDateTime.now();
 
         StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < mese.size(); i++) {
-            AranjareMese m  = mese.get(i);
-            int ramase      = m.getLocuriRamase(dt);
-            int cap         = m.getCapacitate();
+        for (int i = 0; i < tables.size(); i++) {
+            Table t         = tables.get(i);
+            int remaining   = t.getRemainingSeats(dt);
+            int cap         = t.getCapacity();
 
             String status;
-            if (ramase == cap)                              status = "FREE";
-            else if (ramase <= 0 || (cap > 2 && ramase <= 2)) status = "OCCUPIED";
-            else                                            status = "PARTIAL";
+            if (remaining == cap)                               status = "FREE";
+            else if (remaining <= 0 || (cap > 2 && remaining <= 2)) status = "OCCUPIED";
+            else                                                status = "PARTIAL";
 
             sb.append(i > 0 ? "," : "")
-              .append("{\"id\":").append(m.getId())
+              .append("{\"id\":").append(t.getId())
               .append(",\"capacity\":").append(cap)
-              .append(",\"location\":\"").append(m.getAmplasare())
-              .append("\",\"seatsRemaining\":").append(ramase)
+              .append(",\"location\":\"").append(t.getLocation())
+              .append("\",\"seatsRemaining\":").append(remaining)
               .append(",\"status\":\"").append(status).append("\"}");
         }
         sb.append("]");
@@ -130,14 +130,14 @@ public class ApiServer {
 
     private void handleReservation(HttpExchange ex) throws IOException {
         if (preflight(ex)) return;
-        
+
         if ("DELETE".equals(ex.getRequestMethod())) {
             String query = ex.getRequestURI().getQuery();
             String idStr = param(query, "tableId");
             LocalDateTime dt = parseParam(query, "datetime");
             if (idStr != null && dt != null) {
                 int tableId = Integer.parseInt(idStr);
-                if (restaurant.anuleazaRezervare(tableId, dt)) json(ex, 200, "{\"success\":true}");
+                if (restaurant.cancelReservation(tableId, dt)) json(ex, 200, "{\"success\":true}");
                 else json(ex, 404, "{\"success\":false,\"message\":\"Reservation not found.\"}");
             } else {
                 json(ex, 400, err("Missing tableId or datetime"));
@@ -146,20 +146,20 @@ public class ApiServer {
         }
 
         if (!"POST".equals(ex.getRequestMethod())) { json(ex, 405, err("Method not allowed")); return; }
-        
+
         byte[] rawBody = readAll(ex.getRequestBody());
         String body = new String(rawBody, StandardCharsets.UTF_8);
         try {
-            String clientName   = field(body, "clientName");
-            int    guests       = Integer.parseInt(field(body, "guests"));
-            String dateTimeStr  = field(body, "dateTime");
-            String locationStr  = field(body, "location");
-            String specificStr  = field(body, "specific");
+            String clientName  = field(body, "clientName");
+            int    guests      = Integer.parseInt(field(body, "guests"));
+            String dateTimeStr = field(body, "dateTime");
+            String locationStr = field(body, "location");
+            String specificStr = field(body, "specific");
 
-            LocalDateTime      dateTime  = LocalDateTime.parse(dateTimeStr, FMT);
-            Amplasare          location  = Amplasare.valueOf(locationStr.toUpperCase());
-            SpecificulRezervarii specific = SpecificulRezervarii.valueOf(specificStr.toUpperCase());
-            
+            LocalDateTime dateTime   = LocalDateTime.parse(dateTimeStr, FMT);
+            Location      location   = Location.valueOf(locationStr.toUpperCase());
+            BookingType   bookingType = BookingType.valueOf(specificStr.toUpperCase());
+
             Integer tableId = null;
             try {
                 String tIdStr = field(body, "tableId");
@@ -168,7 +168,7 @@ public class ApiServer {
                 }
             } catch (Exception ignore) {}
 
-            boolean ok = restaurant.faRezervare(clientName, guests, dateTime, location, specific, tableId);
+            boolean ok = restaurant.makeReservation(clientName, guests, dateTime, location, bookingType, tableId);
             if (ok) json(ex, 200, "{\"success\":true,\"message\":\"Reservation recorded successfully!\"}");
             else    json(ex, 409, "{\"success\":false,\"message\":\"No table available for selected criteria.\"}");
 
@@ -182,7 +182,7 @@ public class ApiServer {
     private void handleGetReservations(HttpExchange ex) throws IOException {
         if (preflight(ex)) return;
         json(ex, 200, serializeList(
-            mese.stream().flatMap(m -> m.rezervari.stream()).collect(Collectors.toList())
+            tables.stream().flatMap(t -> t.reservations.stream()).collect(Collectors.toList())
         ));
     }
 
@@ -198,23 +198,23 @@ public class ApiServer {
         if (name == null || from == null || to == null) {
             json(ex, 400, err("Missing parameters: name, from, to")); return;
         }
-        json(ex, 200, serializeList(restaurant.cautaRezervariClient(name, from, to)));
+        json(ex, 200, serializeList(restaurant.findClientReservations(name, from, to)));
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    private String serializeList(List<Rezervare> list) {
+    private String serializeList(List<Reservation> list) {
         StringBuilder sb = new StringBuilder("[");
         for (int i = 0; i < list.size(); i++) {
-            Rezervare r = list.get(i);
+            Reservation r = list.get(i);
             sb.append(i > 0 ? "," : "")
-              .append("{\"clientName\":\"").append(esc(r.getNumeClient()))
-              .append("\",\"guests\":").append(r.getNrPersoane())
-              .append(",\"dateTime\":\"").append(r.getDataOra().format(FMT))
-              .append("\",\"location\":\"").append(r.getMasa().getAmplasare())
-              .append("\",\"specific\":\"").append(r.getSpecific())
-              .append("\",\"masaId\":").append(r.getMasa().getId())
-              .append(",\"capacity\":").append(r.getMasa().getCapacitate())
+              .append("{\"clientName\":\"").append(esc(r.getClientName()))
+              .append("\",\"guests\":").append(r.getGuestCount())
+              .append(",\"dateTime\":\"").append(r.getDateTime().format(FMT))
+              .append("\",\"location\":\"").append(r.getTable().getLocation())
+              .append("\",\"specific\":\"").append(r.getBookingType())
+              .append("\",\"tableId\":").append(r.getTable().getId())
+              .append(",\"capacity\":").append(r.getTable().getCapacity())
               .append("}");
         }
         return sb.append("]").toString();

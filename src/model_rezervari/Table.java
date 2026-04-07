@@ -4,59 +4,61 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
- // Represents a restaurant table with ID, capacity, and placement.
- // Manages associated reservations and checks availability based on rules.
+// Represents a restaurant table with ID, capacity, and location.
+// Manages associated reservations and checks availability based on rules.
 
-public class AranjareMese {
+public class Table {
 
     private int id;
-    private int nrLocuri;
-    private Amplasare amplasare;
-    /* default */ List<Rezervare> rezervari = new ArrayList<>();
+    private int capacity;
+    private Location location;
+    /* default */ List<Reservation> reservations = new ArrayList<>();
 
-    public AranjareMese(int id, int nrLocuri, Amplasare amplasare) {
+    public Table(int id, int capacity, Location location) {
         this.id = id;
-        this.nrLocuri = nrLocuri;
-        this.amplasare = amplasare;
+        this.capacity = capacity;
+        this.location = location;
     }
 
-    public boolean esteDisponibila(LocalDateTime dataOra, int nrPersoane, String numeClient) {
-        int ocupate = rezervari.stream()
-                .filter(r -> r.getDataOra().equals(dataOra))
-                .mapToInt(Rezervare::getNrPersoane)
+    public boolean isAvailable(LocalDateTime dateTime, int guestCount, String clientName) {
+        int occupied = reservations.stream()
+                .filter(r -> r.getDateTime().equals(dateTime))
+                .mapToInt(Reservation::getGuestCount)
                 .sum();
 
-        boolean altClient = rezervari.stream()
-                .anyMatch(r -> r.getDataOra().equals(dataOra) &&
-                        !r.getNumeClient().equalsIgnoreCase(numeClient));
+        boolean otherClient = reservations.stream()
+                .anyMatch(r -> r.getDateTime().equals(dateTime) &&
+                        !r.getClientName().equalsIgnoreCase(clientName));
 
-        return !altClient && (ocupate + nrPersoane <= nrLocuri);
+        return !otherClient && (occupied + guestCount <= capacity);
     }
 
-    public void adaugaRezervare(Rezervare rezervare) {
-        rezervari.add(rezervare);
+    public void addReservation(Reservation reservation) {
+        reservations.add(reservation);
     }
 
-    public int getLocuriRamase(LocalDateTime dataOra) {
-        int ocupate = rezervari.stream()
-                .filter(r -> r.getDataOra().equals(dataOra))
-                .mapToInt(Rezervare::getNrPersoane)
+    public int getRemainingSeats(LocalDateTime dateTime) {
+        int occupied = reservations.stream()
+                .filter(r -> r.getDateTime().equals(dateTime))
+                .mapToInt(Reservation::getGuestCount)
                 .sum();
-        return nrLocuri - ocupate;
+        return capacity - occupied;
     }
 
-    public Amplasare getAmplasare() {
-        return amplasare;
+    public Location getLocation() {
+        return location;
     }
-    public int getId()             {
+
+    public int getId() {
         return id;
     }
-    public int getCapacitate() {
-        return nrLocuri;
+
+    public int getCapacity() {
+        return capacity;
     }
 
     @Override
     public String toString() {
-        return "Table " + id + " (" + amplasare + ", " + nrLocuri + " seats)";
+        return "Table " + id + " (" + location + ", " + capacity + " seats)";
     }
 }

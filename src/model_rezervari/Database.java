@@ -12,18 +12,18 @@ public class Database {
     private static final String FILE_NAME = "reservations.json";
     private static final DateTimeFormatter FMT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    public static void save(List<AranjareMese> mese) {
+    public static void save(List<Table> tables) {
         StringBuilder sb = new StringBuilder("[\n");
         boolean first = true;
-        for (AranjareMese m : mese) {
-            for (Rezervare r : m.rezervari) {
+        for (Table t : tables) {
+            for (Reservation r : t.reservations) {
                 if (!first) sb.append(",\n");
                 sb.append("  ").append(serialize(r));
                 first = false;
             }
         }
         sb.append("\n]");
-        
+
         try {
             Files.write(Paths.get(FILE_NAME), sb.toString().getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
@@ -31,7 +31,7 @@ public class Database {
         }
     }
 
-    public static void load(List<AranjareMese> mese) {
+    public static void load(List<Table> tables) {
         File f = new File(FILE_NAME);
         if (!f.exists()) return;
 
@@ -42,22 +42,22 @@ public class Database {
                 int end = json.indexOf('}', idx);
                 if (end < 0) break;
                 String obj = json.substring(idx, end + 1);
-                
+
                 String clientName = field(obj, "clientName");
                 int guests = Integer.parseInt(field(obj, "guests"));
-                SpecificulRezervarii specific = SpecificulRezervarii.valueOf(field(obj, "specific"));
+                BookingType bookingType = BookingType.valueOf(field(obj, "specific"));
                 LocalDateTime dt = LocalDateTime.parse(field(obj, "dateTime"), FMT);
-                int masaId = Integer.parseInt(field(obj, "masaId"));
+                int tableId = Integer.parseInt(field(obj, "tableId"));
 
-                AranjareMese targetMasa = null;
-                for (AranjareMese m : mese) {
-                    if (m.getId() == masaId) { targetMasa = m; break; }
+                Table targetTable = null;
+                for (Table t : tables) {
+                    if (t.getId() == tableId) { targetTable = t; break; }
                 }
-                
-                if (targetMasa != null) {
-                    targetMasa.adaugaRezervare(new Rezervare(clientName, guests, dt, specific, targetMasa));
+
+                if (targetTable != null) {
+                    targetTable.addReservation(new Reservation(clientName, guests, dt, bookingType, targetTable));
                 }
-                
+
                 idx = json.indexOf('{', end);
             }
             System.out.println("[Database] Loaded reservations successfully.");
@@ -66,11 +66,11 @@ public class Database {
         }
     }
 
-    private static String serialize(Rezervare r) {
+    private static String serialize(Reservation r) {
         return String.format(
-            "{\"clientName\":\"%s\",\"guests\":%d,\"location\":\"%s\",\"specific\":\"%s\",\"dateTime\":\"%s\",\"masaId\":%d}",
-            esc(r.getNumeClient()), r.getNrPersoane(), r.getMasa().getAmplasare(), r.getSpecific(),
-            r.getDataOra().format(FMT), r.getMasa().getId()
+            "{\"clientName\":\"%s\",\"guests\":%d,\"location\":\"%s\",\"specific\":\"%s\",\"dateTime\":\"%s\",\"tableId\":%d}",
+            esc(r.getClientName()), r.getGuestCount(), r.getTable().getLocation(), r.getBookingType(),
+            r.getDateTime().format(FMT), r.getTable().getId()
         );
     }
 

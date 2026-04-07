@@ -1,6 +1,6 @@
 package model_rezervari;
 
-public enum Amplasare {
+public enum Location {
     INDOOR, OUTDOOR
 }
-//Se folosește pentru a filtra mesele disponibile în funcție de preferința clientului.
+// Used to filter available tables based on the client's seating preference.
