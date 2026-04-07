@@ -60,14 +60,14 @@ public class ApiServer {
         byte[] data = null;
 
         // 1) Try classpath resource (works from JAR / IntelliJ output)
-        String res = "/model_rezervari/ui" + path;
+        String res = "/public" + path;
         try (InputStream is = getClass().getResourceAsStream(res)) {
             if (is != null) data = readAll(is);
         }
 
         // 2) Fallback: read from source tree (development mode)
         if (data == null) {
-            File f = new File("src/model_rezervari/ui" + path);
+            File f = new File("public" + path);
             if (f.exists()) {
                 try (InputStream is = new FileInputStream(f)) {
                     data = readAll(is);

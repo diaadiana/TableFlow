@@ -1,6 +1,0 @@
-{
-  "cleanUrls": true,
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/src/model_rezervari/ui/$1" }
-  ]
-}
