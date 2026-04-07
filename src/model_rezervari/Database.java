@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class Database {
-    private static final String FILE_NAME = "rezervari.json";
+    private static final String FILE_NAME = "reservations.json";
     private static final DateTimeFormatter FMT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     public static void save(List<AranjareMese> mese) {
