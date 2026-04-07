@@ -96,4 +96,3 @@ Start the server and backend with:
 
 The dashboard will be active at http://localhost:8080 and will attempt to open the default system browser automatically upon successful initialization.
 
-TableFlow: A Zero-Dependency Java Engineering Masterpiece.
