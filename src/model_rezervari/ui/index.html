@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TableFlow — Restaurant Management</title>
+  <meta name="description" content="Intelligent restaurant reservation management system.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ── Sidebar ──────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">TableFlow</div>
+      <div class="logo-sub">Restaurant Management</div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" id="nav-dashboard">Dashboard</a>
+      <a class="nav-item" id="nav-reservations">Reservations</a>
+      <a class="nav-item" id="nav-tables">Tables</a>
+      <a class="nav-item" id="nav-clients">Clients</a>
+    </nav>
+  </aside>
+
+  <!-- ── Center ───────────────────────────────────────────── -->
+  <main class="main">
+    <div class="main-scroll">
+
+      <!-- Date header -->
+      <div class="date-header">
+        <div class="date-row">
+          <h1 class="date-title" id="dateTitle"></h1>
+          <div class="date-nav">
+            <button class="date-btn" id="datePrev" aria-label="Previous day">&larr;</button>
+            <button class="date-today" id="dateToday">Today</button>
+            <button class="date-btn" id="dateNext" aria-label="Next day">&rarr;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Time ruler -->
+      <div class="time-ruler" id="timeRuler"></div>
+
+      <!-- Floor plan -->
+      <div class="floor-plan" id="floorPlan"></div>
+
+    </div>
+
+    <!-- Detail panel (slides in from right) -->
+    <div class="detail-panel" id="detailPanel">
+      <div class="detail-head">
+        <div class="detail-head-row">
+          <div>
+            <div class="detail-title" id="detailTitle"></div>
+            <div class="detail-caption" id="detailCaption"></div>
+          </div>
+          <button class="detail-close" id="detailClose">&times;</button>
+        </div>
+      </div>
+      <div class="detail-body" id="detailBody"></div>
+      <div class="detail-footer">
+        <button class="btn-ghost" id="btnCancel">Cancel</button>
+        <button class="btn-primary" id="btnConfirm">Confirm</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── Right Column ─────────────────────────────────────── -->
+  <aside class="right-col">
+    <div class="right-header">
+      <h2>Reservations Today</h2>
+      <span class="count-badge" id="resCount">0</span>
+    </div>
+    <div class="right-body" id="resList"></div>
+  </aside>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+[
+  {"clientName":"Maria Ionescu","guests":2,"location":"INDOOR","specific":"FAMILY","dateTime":"2026-04-06T21:00:00","masaId":1},
+  {"clientName":"Cooper Mary","guests":2,"location":"INDOOR","specific":"MEETING","dateTime":"2026-04-06T22:00:00","masaId":1},
+  {"clientName":"Ron","guests":2,"location":"INDOOR","specific":"MEETING","dateTime":"2026-04-06T21:09:00","masaId":1},
+  {"clientName":"Cooper Mary","guests":1,"location":"INDOOR","specific":"FAMILY","dateTime":"2026-04-07T11:00:00","masaId":2},
+  {"clientName":"Andrei Dumitrescu","guests":3,"location":"INDOOR","specific":"FRIENDS","dateTime":"2026-04-06T21:00:00","masaId":3},
+  {"clientName":"Maria Grecu","guests":4,"location":"INDOOR","specific":"MEETING","dateTime":"2026-04-07T21:00:00","masaId":3},
+  {"clientName":"Tester Persistence","guests":2,"location":"INDOOR","specific":"FAMILY","dateTime":"2026-04-06T22:00:00","masaId":4},
+  {"clientName":"Deea","guests":1,"location":"INDOOR","specific":"FAMILY","dateTime":"2026-04-07T13:00:00","masaId":4},
+  {"clientName":"Alexandru Popescu","guests":4,"location":"OUTDOOR","specific":"BIRTHDAY","dateTime":"2026-04-06T21:00:00","masaId":5},
+  {"clientName":"Luca Luca","guests":2,"location":"OUTDOOR","specific":"FAMILY","dateTime":"2026-04-07T18:00:00","masaId":5},
+  {"clientName":"Elena Gheorghe","guests":1,"location":"OUTDOOR","specific":"MEETING","dateTime":"2026-04-06T21:00:00","masaId":6},
+  {"clientName":"Dalia Pop","guests":4,"location":"OUTDOOR","specific":"FAMILY","dateTime":"2026-04-07T21:00:00","masaId":6},
+  {"clientName":"Robert Deniro","guests":6,"location":"OUTDOOR","specific":"FAMILY","dateTime":"2026-04-07T18:00:00","masaId":7}
+]
